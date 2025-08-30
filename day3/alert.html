@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Student Registration Form</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f6f9;
+      margin: 0;
+      padding: 20px;
+    }
+
+    h2 {
+      text-align: center;
+      color: #333;
+    }
+
+    form {
+      max-width: 500px;
+      margin: 0 auto;
+      background: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+
+    label {
+      display: block;
+      margin-bottom: 6px;
+      font-weight: bold;
+      color: #444;
+    }
+
+    input, select, textarea, button {
+      width: 100%;
+      padding: 8px;
+      margin-bottom: 15px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      font-size: 14px;
+    }
+
+    textarea {
+      resize: none;
+    }
+
+    .inline-group {
+      display: flex;
+      gap: 15px;
+      margin-bottom: 15px;
+    }
+
+    .inline-group label {
+      font-weight: normal;
+    }
+
+    .inline-group input {
+      width: auto;
+      margin-right: 5px;
+    }
+
+    button {
+      cursor: pointer;
+      font-size: 15px;
+    }
+
+    button[type="submit"], button[type="reset"] {
+      width: 48%;
+    }
+
+    button[type="submit"] {
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+    }
+
+    button[type="reset"] {
+      background-color: #f44336;
+      color: white;
+      border: none;
+    }
+
+    button:hover {
+      opacity: 0.9;
+    }
+
+    #studentsTable {
+      max-width: 900px;
+      margin: 20px auto;
+      border-collapse: collapse;
+      width: 100%;
+      background: #fff;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+
+    #studentsTable th, #studentsTable td {
+      border: 1px solid #ddd;
+      padding: 10px;
+      text-align: center;
+    }
+
+    #studentsTable th {
+      background-color: #4CAF50;
+      color: white;
+    }
+
+    .delete-btn {
+      background-color: #f44336;
+      color: white;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 4px;
+    }
+
+    .delete-btn:hover {
+      opacity: 0.8;
+    }
+  </style>
+</head>
+<body>
+
+  <h2>Student Registration Form</h2>
+
+  <form id="regForm">
+    <label for="fullname">Full Name:</label>
+    <input type="text" id="fullname" name="fullname" required>
+
+    <label for="email">Email:</label>
+    <input type="email" id="email" name="email" required>
+
+    <label for="password">Password:</label>
+    <input type="password" id="password" name="password" required>
+
+    <label for="dob">Date of Birth:</label>
+    <input type="date" id="dob" name="dob">
+
+    <label>Gender:</label>
+    <div class="inline-group">
+      <label><input type="radio" name="gender" value="male"> Male</label>
+      <label><input type="radio" name="gender" value="female"> Female</label>
+      <label><input type="radio" name="gender" value="other"> Other</label>
+    </div>
+
+    <label for="department">Department:</label>
+    <select id="department" name="department">
+      <option value="">--Select--</option>
+      <option value="cse">Computer Science</option>
+      <option value="ece">Electronics</option>
+      <option value="eee">Electrical</option>
+      <option value="mech">Mechanical</option>
+      <option value="civil">Civil</option>
+    </select>
+
+    <label>Skills:</label>
+    <div class="inline-group">
+      <label><input type="checkbox" name="skills" value="HTML"> HTML</label>
+      <label><input type="checkbox" name="skills" value="CSS"> CSS</label>
+      <label><input type="checkbox" name="skills" value="JavaScript"> JavaScript</label>
+      <label><input type="checkbox" name="skills" value="React"> React</label>
+    </div>
+
+    <label for="address">Address:</label>
+    <textarea id="address" name="address" rows="4"></textarea>
+
+    <label for="photo">Upload Photo:</label>
+    <input type="file" id="photo" name="photo">
+
+    <div style="display: flex; justify-content: space-between;">
+      <button type="submit">Register</button>
+      <button type="reset">Reset</button>
+    </div>
+  </form>
+
+  <table id="studentsTable" style="display:none;">
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Email</th>
+        <th>DOB</th>
+        <th>Gender</th>
+        <th>Department</th>
+        <th>Skills</th>
+        <th>Address</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody id="studentsBody"></tbody>
+  </table>
+
+  <script>
+    const form = document.getElementById("regForm");
+    const table = document.getElementById("studentsTable");
+    const tbody = document.getElementById("studentsBody");
+
+    // Load students from Local Storage on page load
+    window.onload = function() {
+      let students = JSON.parse(localStorage.getItem("students")) || [];
+      students.forEach(student => addRow(student));
+      if (students.length > 0) {
+        table.style.display = "table";
+      }
+    };
+
+    form.addEventListener("submit", function(event){
+      event.preventDefault(); 
+
+      let name = document.getElementById("fullname").value.trim();
+      let email = document.getElementById("email").value.trim();
+      let password = document.getElementById("password").value;
+      let dob = document.getElementById("dob").value;
+      let dept = document.getElementById("department").value;
+      let address = document.getElementById("address").value.trim();
+
+      let gender = document.querySelector('input[name="gender"]:checked');
+      let skills = document.querySelectorAll('input[name="skills"]:checked');
+
+      // Validation
+      if (name === "") { alert("Full Name is required!"); return; }
+      if (!email.includes("@") || !email.includes(".")) { alert("Enter a valid email!"); return; }
+      if (password.length < 6) { alert("Password must be at least 6 characters!"); return; }
+      if (!gender) { alert("Please select gender!"); return; }
+      if (dept === "") { alert("Please select department!"); return; }
+      if (skills.length === 0) { alert("Select at least one skill!"); return; }
+      if (address === "") { alert("Address cannot be empty!"); return; }
+
+      let selectedSkills = [];
+      skills.forEach(cb => selectedSkills.push(cb.value));
+
+      // Create student object
+      let student = { name, email, dob, gender: gender.value, dept, skills: selectedSkills, address };
+
+      alert(JSON.stringify(student))
+      // Save to Local Storage
+      let students = JSON.parse(localStorage.getItem("students")) || [];
+      students.push(student);
+      localStorage.setItem("students", JSON.stringify(students));
+
+      // Add row in table
+      addRow(student);
+
+      table.style.display = "table";
+      form.reset();
+    });
+
+    function addRow(student) {
+      let row = document.createElement("tr");
+
+      row.innerHTML = `
+        <td>${student.name}</td>
+        <td>${student.email}</td>
+        <td>${student.dob}</td>
+        <td>${student.gender}</td>
+        <td>${student.dept}</td>
+        <td>${student.skills.join(", ")}</td>
+        <td>${student.address}</td>
+        <td><button class="delete-btn">Delete</button></td>
+      `;
+
+      // Delete functionality
+      row.querySelector(".delete-btn").addEventListener("click", function(){
+        row.remove();
+        let students = JSON.parse(localStorage.getItem("students")) || [];
+        students = students.filter(s => !(s.email === student.email && s.name === student.name));
+        localStorage.setItem("students", JSON.stringify(students));
+        if (tbody.children.length === 0) {
+          table.style.display = "none";
+        }
+      });
+
+      tbody.appendChild(row);
+    }
+  </script>
+
+</body>
+</html>
