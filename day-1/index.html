@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>User Login Form</title>
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        background: #b7c5ca;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+    }
+
+    form {
+        background: #dfc9c9;
+        padding: 25px 30px;
+        border-radius: 10px;
+        box-shadow: 0px 4px 10px rgba(0,0,0,0.1);
+        width: 350px;
+    }
+
+
+    h2 {
+        text-align: center;
+        margin-bottom: 20px;
+        color: #333;
+    }
+
+    label {
+        font-weight: bold;
+        display: block;
+        margin-bottom: 5px;
+        color: #444;
+    }
+
+    input, textarea, button {
+        width: 100%;
+        padding: 10px;
+        margin-bottom: 15px;
+        border: 1px solid #ccc;
+        border-radius: 6px;
+        font-size: 14px;
+    }
+
+    input:focus, textarea:focus {
+        border-color: #007BFF;
+        outline: none;
+    }
+
+    .gender-options {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 15px;
+    }
+
+    .gender-options label {
+        font-weight: normal;
+        margin-left: 5px;
+    }
+
+    button {
+        background: #81d96b;
+        color: white;
+        font-weight: bold;
+        border: none;
+        cursor: pointer;
+        transition: 0.3s;
+    }
+
+    button:hover {
+        background: #0056b3;
+    }
+    #studentsTable {
+      max-width: 900px;
+      margin: 20px auto;
+      border-collapse: collapse;
+      width: 100%;
+      background: #fff;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    #studentsTable th, #studentsTable td {
+      border: 1px solid #ddd;
+      padding: 10px;
+      text-align: center;
+    }
+    #studentsTable th {
+      background-color: #9ddfe8;
+      color: white;
+    }
+      
+</style>
+</head>
+<body>
+
+<form action="/submit_form" method="post" id="regForm">
+    <h2>Login Form</h2>
+
+    <label for="name">Name:</label>
+    <input type="text" id="name" name="name" placeholder="Enter your name" required />
+
+    <label for="email">Email:</label>
+    <input type="email" id="email" name="email" placeholder="Enter your email" required />
+
+    <label for="password">Password:</label>
+    <input type="password" id="password" name="password" placeholder="Enter your password" required />
+
+    <label for="phone">Phone Number:</label>
+    <input type="tel" id="phone" name="phone" pattern="[0-9]{10}" placeholder="1234567890" required />
+
+    <label>Gender:</label>
+    <div class="gender-options">
+        <div><input type="radio" id="male" name="gender" value="male" required /> <label for="male">Male</label></div>
+        <div><input type="radio" id="female" name="gender" value="female" /> <label for="female">Female</label></div>
+        <div><input type="radio" id="other" name="gender" value="other" /> <label for="other">Other</label></div>
+    </div>
+
+    <label for="dob">Date of Birth:</label>
+    <input type="date" id="dob" name="dob" required />
+
+    <label for="address">Address:</label>
+    <textarea id="address" name="address" rows="4" placeholder="Enter your address" required></textarea>
+
+    <button type="submit">Submit</button>
+</form>
+<table id="studentsTable" style="display:none;">
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Email</th>
+        <th>DOB</th>
+        <th>Gender</th>
+        
+        <th>Address</th>
+        
+      </tr>
+    </thead>
+    <tbody id="studentsBody"></tbody>
+  </table>
+  <script>
+    const form = document.getElementById("regForm");
+    const table = document.getElementById("studentsTable");
+    const tbody = document.getElementById("studentsBody");
+
+    // Load students from Local Storage on page load
+    window.onload = function() {
+      let students = JSON.parse(localStorage.getItem("students")) || [];
+      students.forEach(student => addRow(student));
+      if (students.length > 0) {
+        table.style.display = "table";
+      }
+    };
+
+    form.addEventListener("submit", function(event){
+      event.preventDefault(); 
+
+      let name = document.getElementById("name").value.trim();
+      let email = document.getElementById("email").value.trim();
+      let password = document.getElementById("password").value;
+      let dob = document.getElementById("dob").value;
+      
+      let address = document.getElementById("address").value.trim();
+
+      
+      // Validation
+      if (name === "") { alert("Full Name is required!"); return; }
+      if (!email.includes("@") || !email.includes(".")) { alert("Enter a valid email!"); return; }
+      if (password.length < 6) { alert("Password must be at least 6 characters!"); return; }
+      
+      
+     
+      if (address === "") { alert("Address cannot be empty!"); return; }
+
+      
+
+      // Create student object
+      let student = { name, email, dob,   address };
+
+      // Save to Local Storage
+      let students = JSON.parse(localStorage.getItem("students")) || [];
+      students.push(student);
+      localStorage.setItem("students", JSON.stringify(students));
+
+      // Add row in table
+      addRow(student);
+
+      table.style.display = "table";
+      form.reset();
+    });
+
+    function addRow(student) {
+      let row = document.createElement("tr");
+
+      row.innerHTML = `
+        <td>${student.name}</td>
+        <td>${student.email}</td>
+        <td>${student.dob}</td>
+        
+        <td>${student.address}</td>
+        <td><button class="delete-btn">Delete</button></td>
+      `;
+
+      // Delete functionality
+      row.querySelector(".delete-btn").addEventListener("click", function(){
+        row.remove();
+        let students = JSON.parse(localStorage.getItem("students")) || [];
+        students = students.filter(s => !(s.email === student.email && s.name === student.name));
+        localStorage.setItem("students", JSON.stringify(students));
+        if (tbody.children.length === 0) {
+          table.style.display = "none";
+        }
+      });
+
+      tbody.appendChild(row);
+    }
+  </script>
+
+
+</body>
+</html>
